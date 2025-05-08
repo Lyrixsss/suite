@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Оформление заказа</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      color: #222;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 20px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      padding: 40px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 24px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007AFF;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #005FCC;
+    }
+
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #777;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Оформление заказа</h2>
+    <form id="order-form">
+      <input type="hidden" name="user_id" id="user_id">
+      <input type="text" name="name" placeholder="ФИО" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="tel" name="phone" placeholder="Телефон" required>
+      <input type="text" name="city" placeholder="Город" required>
+      <select name="delivery" required>
+        <option value="">Выберите способ доставки</option>
+        <option value="Курьер">Курьер</option>
+        <option value="Самовывоз">Самовывоз</option>
+      </select>
+      <button type="submit" id="submit-button">
+        <span id="button-content">Отправить заказ</span>
+      </button>
+    </form>
+    <div class="footer">© 2025 Neuron Bot</div>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    document.getElementById("user_id").value = tg.initDataUnsafe?.user?.id || "";
+
+    const form = document.getElementById("order-form");
+    const button = document.getElementById("submit-button");
+    const buttonContent = document.getElementById("button-content");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      button.disabled = true;
+      buttonContent.innerHTML = `<span class="spinner"></span>Отправка...`;
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch("https://your-server.com/api/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+          tg.close();
+        } else {
+          alert("Ошибка при оформлении заказа");
+        }
+      } catch (error) {
+        alert("Сетевая ошибка. Попробуйте позже.");
+      } finally {
+        button.disabled = false;
+        buttonContent.innerHTML = "Отправить заказ";
+      }
+    });
+  </script>
+</body>
+</html>
